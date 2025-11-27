@@ -16,18 +16,16 @@ export default async function EventPage({
   const { id } = await params
   const supabase = await createClient()
 
-  // Check if user is admin
   const {
     data: { user },
   } = await supabase.auth.getUser()
   let isAdmin = false
   if (user) {
-    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).single()
+    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).maybeSingle()
     isAdmin = !!admin
   }
 
-  // Fetch event
-  const { data: event } = await supabase.from("events").select("*").eq("id", id).single()
+  const { data: event } = await supabase.from("events").select("*").eq("id", id).maybeSingle()
 
   if (!event) {
     notFound()
@@ -42,15 +40,22 @@ export default async function EventPage({
 
       <main className="flex-1">
         <div className="mx-auto max-w-4xl px-6 py-16 lg:px-8">
-          <Button asChild variant="ghost" className="mb-6">
-            <Link href="/events" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" /> Back to Events
-            </Link>
-          </Button>
+          <div className="flex items-center justify-between mb-6">
+            <Button asChild variant="ghost">
+              <Link href="/events" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" /> Back to Events
+              </Link>
+            </Button>
+            {isAdmin && (
+              <Button asChild variant="outline" size="sm">
+                <Link href={`/admin/events/${event.id}`}>Edit Details</Link>
+              </Button>
+            )}
+          </div>
 
           <article>
             {event.image_url && (
-              <div className="aspect-video w-full overflow-hidden rounded-xl mb-8">
+              <div className="aspect-video w-full overflow-hidden border border-border mb-8">
                 <img
                   src={event.image_url || "/placeholder.svg"}
                   alt={event.title}
@@ -94,20 +99,46 @@ export default async function EventPage({
             </div>
 
             {event.description && (
-              <div className="prose prose-neutral max-w-none mb-8">
+              <div className="mb-8">
                 <p className="text-lg text-muted-foreground whitespace-pre-wrap">{event.description}</p>
               </div>
             )}
 
+            {event.event_details && (
+              <div className="mb-8 border-t border-border pt-8">
+                <h2 className="text-xl font-semibold mb-4">{isPast ? "Event Recap" : "About This Event"}</h2>
+                <div className="prose prose-neutral max-w-none">
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">{event.event_details}</p>
+                </div>
+              </div>
+            )}
+
+            {event.gallery_images && event.gallery_images.length > 0 && (
+              <div className="mb-8 border-t border-border pt-8">
+                <h2 className="text-xl font-semibold mb-4">{isPast ? "Event Photos" : "Gallery"}</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {event.gallery_images.map((url: string, index: number) => (
+                    <div key={index} className="border border-border overflow-hidden">
+                      <img
+                        src={url || "/placeholder.svg"}
+                        alt={`${event.title} - Image ${index + 1}`}
+                        className="w-full aspect-video object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {event.luma_embed_url && (
-              <div className="mb-8">
+              <div className="mb-8 border-t border-border pt-8">
                 <h2 className="text-xl font-semibold mb-4">{isPast ? "Event Details" : "Register for this Event"}</h2>
                 <LumaEmbed url={event.luma_embed_url} />
               </div>
             )}
 
-            {!event.luma_embed_url && !isPast && (
-              <div className="bg-muted/50 rounded-lg p-8 text-center">
+            {!event.luma_embed_url && !isPast && !event.event_details && (
+              <div className="bg-secondary border border-border p-8 text-center">
                 <p className="text-muted-foreground">Registration details coming soon.</p>
               </div>
             )}

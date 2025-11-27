@@ -13,7 +13,7 @@ export default async function EventsPage() {
   } = await supabase.auth.getUser()
   let isAdmin = false
   if (user) {
-    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).single()
+    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).maybeSingle()
     isAdmin = !!admin
   }
 

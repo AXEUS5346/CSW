@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
 import { EventCard } from "@/components/event-card"
+import { AlbumPreview } from "@/components/gallery/album-preview"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Calendar, Users, Code, Terminal } from "lucide-react"
 import Link from "next/link"
@@ -15,7 +16,7 @@ export default async function HomePage() {
   } = await supabase.auth.getUser()
   let isAdmin = false
   if (user) {
-    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).single()
+    const { data: admin } = await supabase.from("admins").select("id").eq("user_id", user.id).maybeSingle()
     isAdmin = !!admin
   }
 
@@ -32,16 +33,38 @@ export default async function HomePage() {
     .select("*")
     .eq("page", "home")
     .eq("section", "hero")
-    .single()
+    .maybeSingle()
+
+  const { data: galleryEventsData } = await supabase
+    .from("gallery_events")
+    .select("*")
+    .eq("is_published", true)
+    .order("event_date", { ascending: false })
+    .limit(6)
+
+  const galleryEvents = galleryEventsData || []
+
+  // Fetch images for each gallery event
+  const galleryEventsWithImages = await Promise.all(
+    galleryEvents.map(async (event) => {
+      const { data: images } = await supabase
+        .from("gallery_images")
+        .select("*")
+        .eq("gallery_event_id", event.id)
+        .order("is_featured", { ascending: false })
+        .order("display_order", { ascending: true })
+      return { ...event, images: images || [] }
+    }),
+  )
 
   return (
     <div className="min-h-screen flex flex-col">
       <SiteHeader isAdmin={isAdmin} />
 
       <main className="flex-1">
+        {/* Hero Section */}
         <section className="relative py-24 lg:py-32 border-b border-border">
           <div className="absolute inset-0 bg-secondary/50" />
-          {/* Tech grid pattern */}
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -62,11 +85,11 @@ export default async function HomePage() {
                 />
               </div>
               <h1 className="text-4xl font-bold tracking-tight sm:text-6xl text-balance">
-                {heroContent?.title || "Build Across The Stack"}
+                {heroContent?.title || "Build Together. Learn Together."}
               </h1>
               <p className="mt-6 text-lg leading-8 text-muted-foreground text-pretty max-w-2xl mx-auto">
                 {heroContent?.content ||
-                  "CrossStack is a community of developers who build across technologies. Join us for events, workshops, and connect with builders who ship."}
+                  "CrossStack is a developer-first community where builders, founders, and tinkerers regularly meet to showcase what they are building, exchange feedback, and learn from each other."}
               </p>
               <div className="mt-10 flex items-center justify-center gap-4 flex-wrap">
                 <Button asChild size="lg" className="font-semibold">
@@ -82,6 +105,7 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Features Section */}
         <section className="py-20 bg-background">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="grid gap-px bg-border md:grid-cols-3">
@@ -89,27 +113,27 @@ export default async function HomePage() {
                 <div className="flex h-12 w-12 items-center justify-center border border-primary mb-6">
                   <Calendar className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Regular Events</h3>
+                <h3 className="text-lg font-bold mb-2">Demo Sessions</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Meetups, workshops, and hackathons. Learn new tech and ship projects with the community.
+                  Present your projects, prototypes, or startup ideas to a room of builders and founders.
                 </p>
               </div>
               <div className="flex flex-col p-8 bg-background border-x border-border">
                 <div className="flex h-12 w-12 items-center justify-center border border-primary mb-6">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Developer Network</h3>
+                <h3 className="text-lg font-bold mb-2">Builder Network</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Connect with builders across frontend, backend, DevOps, and beyond. Grow your network.
+                  Connect with founders, developers, and tinkerers who ship real projects.
                 </p>
               </div>
               <div className="flex flex-col p-8 bg-background">
                 <div className="flex h-12 w-12 items-center justify-center border border-primary mb-6">
                   <Code className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-lg font-bold mb-2">Learn & Ship</h3>
+                <h3 className="text-lg font-bold mb-2">Real Feedback</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Hands-on sessions, code reviews, and project showcases. Level up your skills.
+                  Get honest, actionable feedback and walk away with clear next steps.
                 </p>
               </div>
             </div>
@@ -147,12 +171,16 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* CrossStack Album Preview Section */}
+        <AlbumPreview galleryEvents={galleryEventsWithImages} />
+
+        {/* CTA Section */}
         <section className="py-20 bg-foreground text-background">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
               <div>
                 <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Ready to build with us?</h2>
-                <p className="mt-4 text-lg opacity-80">Join CrossStack and connect with developers who ship.</p>
+                <p className="mt-4 text-lg opacity-80">Join CrossStack and connect with builders who ship.</p>
               </div>
               <Button asChild size="lg" variant="secondary" className="font-semibold">
                 <Link href="/join">Become a Member</Link>

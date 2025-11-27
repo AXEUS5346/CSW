@@ -41,8 +41,11 @@ export function AdminsManager({ admins, currentAdmin }: AdminsManagerProps) {
 
     const supabase = createClient()
 
-    // Check if email is already an admin
-    const { data: existingAdmin } = await supabase.from("admins").select("id").eq("email", email.toLowerCase()).single()
+    const { data: existingAdmin } = await supabase
+      .from("admins")
+      .select("id")
+      .eq("email", email.toLowerCase())
+      .maybeSingle()
 
     if (existingAdmin) {
       setError("This email is already an admin.")

@@ -13,8 +13,7 @@ export default async function AdminPage() {
     redirect("/auth/login")
   }
 
-  // Check if user is admin
-  const { data: admin } = await supabase.from("admins").select("*").eq("user_id", user.id).single()
+  const { data: admin } = await supabase.from("admins").select("*").eq("user_id", user.id).maybeSingle()
 
   if (!admin) {
     redirect("/")
@@ -25,17 +24,37 @@ export default async function AdminPage() {
 
   const { data: members } = await supabase.from("members").select("*").order("created_at", { ascending: false })
 
-  const { data: admins } = await supabase.from("admins").select("*").order("created_at", { ascending: false })
+  const { data: adminsData } = await supabase.from("admins").select("*").order("created_at", { ascending: false })
 
   const { data: content } = await supabase.from("content").select("*").order("page", { ascending: true })
+
+  const { data: galleryEventsData } = await supabase
+    .from("gallery_events")
+    .select("*")
+    .order("display_order", { ascending: true })
+
+  const galleryEvents = galleryEventsData || []
+
+  // Fetch images for each gallery event
+  const galleryEventsWithImages = await Promise.all(
+    galleryEvents.map(async (event) => {
+      const { data: images } = await supabase
+        .from("gallery_images")
+        .select("*")
+        .eq("gallery_event_id", event.id)
+        .order("display_order", { ascending: true })
+      return { ...event, images: images || [] }
+    }),
+  )
 
   return (
     <AdminDashboard
       admin={admin}
       events={events || []}
       members={members || []}
-      admins={admins || []}
+      admins={adminsData || []}
       content={content || []}
+      galleryEvents={galleryEventsWithImages}
     />
   )
 }

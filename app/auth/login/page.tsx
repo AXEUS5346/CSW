@@ -90,7 +90,7 @@ export default function LoginPage() {
             .from("admins")
             .select("id")
             .eq("user_id", data.user.id)
-            .single()
+            .maybeSingle()
 
           if (!existingAdmin) {
             await supabase.from("admins").insert({
@@ -101,7 +101,7 @@ export default function LoginPage() {
           }
           router.push("/admin")
         } else {
-          const { data: admin } = await supabase.from("admins").select("id").eq("user_id", data.user.id).single()
+          const { data: admin } = await supabase.from("admins").select("id").eq("user_id", data.user.id).maybeSingle()
 
           if (admin) {
             router.push("/admin")

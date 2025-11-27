@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Users, Shield, FileText, LogOut } from "lucide-react"
+import { Calendar, Users, Shield, FileText, LogOut, ImageIcon } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import type { Admin, Event, Member, Content } from "@/lib/types"
+import type { Admin, Event, Member, Content, GalleryEvent, GalleryImage } from "@/lib/types"
 import { EventsManager } from "./events-manager"
 import { MembersManager } from "./members-manager"
 import { AdminsManager } from "./admins-manager"
 import { ContentManager } from "./content-manager"
+import { GalleryManager } from "./gallery-manager"
 
 interface AdminDashboardProps {
   admin: Admin
@@ -20,9 +21,10 @@ interface AdminDashboardProps {
   members: Member[]
   admins: Admin[]
   content: Content[]
+  galleryEvents: (GalleryEvent & { images: GalleryImage[] })[]
 }
 
-export function AdminDashboard({ admin, events, members, admins, content }: AdminDashboardProps) {
+export function AdminDashboard({ admin, events, members, admins, content, galleryEvents }: AdminDashboardProps) {
   const router = useRouter()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
@@ -34,6 +36,7 @@ export function AdminDashboard({ admin, events, members, admins, content }: Admi
   }
 
   const upcomingEvents = events.filter((e) => new Date(e.event_date) >= new Date()).length
+  const totalPhotos = galleryEvents.reduce((acc, event) => acc + (event.images?.length || 0), 0)
 
   return (
     <div className="min-h-screen bg-secondary">
@@ -63,7 +66,7 @@ export function AdminDashboard({ admin, events, members, admins, content }: Admi
 
       <main className="p-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid gap-4 md:grid-cols-4 mb-8">
+          <div className="grid gap-4 md:grid-cols-5 mb-8">
             <div className="bg-background border border-border p-6">
               <div className="flex items-center gap-4">
                 <div className="flex h-10 w-10 items-center justify-center border border-primary">
@@ -108,13 +111,26 @@ export function AdminDashboard({ admin, events, members, admins, content }: Admi
                 </div>
               </div>
             </div>
+            <div className="bg-background border border-border p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex h-10 w-10 items-center justify-center border border-accent">
+                  <ImageIcon className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{totalPhotos}</p>
+                  <p className="text-sm text-muted-foreground">Photos</p>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Tabs */}
           <Tabs defaultValue="events" className="w-full">
             <TabsList className="mb-6">
               <TabsTrigger value="events" className="gap-2">
                 <Calendar className="h-4 w-4" /> Events
+              </TabsTrigger>
+              <TabsTrigger value="gallery" className="gap-2">
+                <ImageIcon className="h-4 w-4" /> Gallery
               </TabsTrigger>
               <TabsTrigger value="members" className="gap-2">
                 <Users className="h-4 w-4" /> Members
@@ -129,6 +145,10 @@ export function AdminDashboard({ admin, events, members, admins, content }: Admi
 
             <TabsContent value="events">
               <EventsManager events={events} adminId={admin.id} />
+            </TabsContent>
+
+            <TabsContent value="gallery">
+              <GalleryManager galleryEvents={galleryEvents} adminId={admin.id} />
             </TabsContent>
 
             <TabsContent value="members">

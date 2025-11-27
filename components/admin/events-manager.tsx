@@ -21,8 +21,9 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Pencil, Trash2, ExternalLink } from "lucide-react"
+import { Plus, Pencil, Trash2, ExternalLink, FileText } from "lucide-react"
 import type { Event } from "@/lib/types"
+import Link from "next/link"
 
 interface EventsManagerProps {
   events: Event[]
@@ -139,7 +140,9 @@ export function EventsManager({ events, adminId }: EventsManagerProps) {
               <DialogHeader>
                 <DialogTitle>{editingEvent ? "Edit Event" : "Create Event"}</DialogTitle>
                 <DialogDescription>
-                  {editingEvent ? "Update the event details below." : "Fill in the details for your new event."}
+                  {editingEvent
+                    ? "Update the event details below."
+                    : "Fill in the details for your new event. You can add detailed content and images after creating."}
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -154,12 +157,13 @@ export function EventsManager({ events, adminId }: EventsManagerProps) {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">Short Description</Label>
                   <Textarea
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     rows={3}
+                    placeholder="Brief description shown on event cards"
                   />
                 </div>
 
@@ -213,7 +217,7 @@ export function EventsManager({ events, adminId }: EventsManagerProps) {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="image_url">Image URL</Label>
+                  <Label htmlFor="image_url">Cover Image URL</Label>
                   <Input
                     id="image_url"
                     type="url"
@@ -300,10 +304,15 @@ export function EventsManager({ events, adminId }: EventsManagerProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(event)}>
+                        <Button variant="ghost" size="icon" asChild title="Edit Details">
+                          <Link href={`/admin/events/${event.id}`}>
+                            <FileText className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => openEditDialog(event)} title="Quick Edit">
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)}>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(event.id)} title="Delete">
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
                       </div>

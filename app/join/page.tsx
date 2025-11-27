@@ -19,8 +19,6 @@ export default function JoinPage() {
     email: "",
     bio: "",
     github_url: "",
-    linkedin_url: "",
-    twitter_url: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -38,8 +36,6 @@ export default function JoinPage() {
       email: formData.email,
       bio: formData.bio || null,
       github_url: formData.github_url || null,
-      linkedin_url: formData.linkedin_url || null,
-      twitter_url: formData.twitter_url || null,
     })
 
     if (insertError) {
@@ -90,14 +86,13 @@ export default function JoinPage() {
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Become a Member</h1>
             <p className="mt-4 text-lg text-muted-foreground">
-              Join our community of developers building across the stack.
+              Join our community of builders, founders, and tinkerers.
             </p>
           </div>
         </div>
 
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2">
-            {/* Benefits Section */}
             <div>
               <h2 className="text-xl font-bold mb-6">Why Join CrossStack?</h2>
 
@@ -107,8 +102,10 @@ export default function JoinPage() {
                     <Calendar className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-bold">Event Access</h3>
-                    <p className="text-sm text-muted-foreground">Be the first to know about and register for events.</p>
+                    <h3 className="font-bold">Demo Your Projects</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Present real projects and get actionable feedback from other builders.
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -116,8 +113,10 @@ export default function JoinPage() {
                     <Users className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-bold">Network</h3>
-                    <p className="text-sm text-muted-foreground">Connect with developers and industry professionals.</p>
+                    <h3 className="font-bold">Connect with Builders</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Network with founders, developers, and tinkerers who ship.
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -125,16 +124,15 @@ export default function JoinPage() {
                     <Code className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-bold">Learn & Build</h3>
+                    <h3 className="font-bold">Learn by Building</h3>
                     <p className="text-sm text-muted-foreground">
-                      Access workshops, code reviews, and build projects together.
+                      Structured but lightweight events focused on practical learning.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Form Section */}
             <Card>
               <CardHeader>
                 <CardTitle>Join Us</CardTitle>
@@ -171,7 +169,7 @@ export default function JoinPage() {
                       id="bio"
                       value={formData.bio}
                       onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                      placeholder="Tell us about yourself..."
+                      placeholder="Tell us about yourself and what you're building..."
                       rows={3}
                     />
                   </div>
@@ -184,28 +182,6 @@ export default function JoinPage() {
                       value={formData.github_url}
                       onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
                       placeholder="https://github.com/username"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="linkedin">LinkedIn URL</Label>
-                    <Input
-                      id="linkedin"
-                      type="url"
-                      value={formData.linkedin_url}
-                      onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                      placeholder="https://linkedin.com/in/username"
-                    />
-                  </div>
-
-                  <div className="grid gap-2">
-                    <Label htmlFor="twitter">Twitter URL</Label>
-                    <Input
-                      id="twitter"
-                      type="url"
-                      value={formData.twitter_url}
-                      onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-                      placeholder="https://twitter.com/username"
                     />
                   </div>
 
